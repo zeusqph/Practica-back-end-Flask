@@ -1,14 +1,57 @@
-productos = [
-    {"nombre":"Laptop","Precio":2359,"Cantidad":27},
-    {"nombre":"Teclado","Precio":840,"Cantidad":30},
-    {"nombre":"Mouse","Precio":2359,"Cantidad":50},
-    {"nombre":"Monitor","Precio":1899,"Cantidad":23},
-    {"nombre":"Iphone","Precio":8430,"Cantidad":15},
-    {"nombre":"Cargador de Lapto","Precio":259,"Cantidad":30},
-    {"nombre":"Teclado RGB","Precio":539,"Cantidad":11},
-    {"nombre":"Teclado RGB mecanico","Precio":850,"Cantidad":34},
-    {"nombre":"Xiomi E2","Precio":7899,"Cantidad":70},
-    {"nombre":"Camara","Precio":4459,"Cantidad":68},
-    {"nombre":"Laptop ASUS","Precio":5559,"Cantidad":55},
-    {"nombre":"Iphone 11 PRO MAX","Precio":7959,"Cantidad":30}
-]
+import mysql.connector
+from mysql.connector import Error
+def get_db_connection():
+
+    """Establece una conexión a la base de datos MySQL."""
+    try:
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="1234",
+            database="productos"
+        )
+        if connection.is_connected():
+            print("Conexión a la base de datos MySQL establecida.")
+            return connection
+    except Error as e:
+        print(f"Error al conectar a la base de datos: {e}")
+        return None
+
+def fetch_productos ():
+
+    connection = get_db_connection()
+    if connection is None:
+        return [("no se pudo conectar a la base de datos")]
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM productos_table")
+        productos = cursor.fetchall()
+        cursor.close()
+        return productos
+    
+    except Error as e:
+        print(f"Error al consultar la consulta {e}")
+        return [("error al conectarse a la base de datos")]
+    
+    finally:
+        connection.close()
+
+def fetch_producto_by_name(nombre_producto):
+    """Obtiene un producto específico de la base de datos por nombre."""
+    connection = get_db_connection()
+    if connection is None:
+        return None  # Retorna None si no se pudo conectar
+
+    try:
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM productos_table WHERE nombre = %s", (nombre_producto,))
+        producto = cursor.fetchone()
+        cursor.close()
+        return producto
+    except Error as e:
+        print(f"Error al ejecutar la consulta: {e}")
+        return None
+    finally:
+        connection.close()
+
